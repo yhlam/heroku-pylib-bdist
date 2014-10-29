@@ -1,0 +1,30 @@
+---
+# Verify the required Python version exists and install if not
+
+- name: Check if Python {{ version }} is already installed
+  command: "which python{{ version|truncate(length=3, killwords=True, end='') }}"
+  ignore_errors: True
+  register: pythonbin
+
+- name: Verify the minor Python version matches
+  command: "{{ pythonbin.stdout }} --version"
+  register: installed_version
+  when: pythonbin|success
+
+- name: Install Python {{ version }}
+  include: python_install.yml version={{ version }}
+  when: pythonbin|failed or ( "{{ installed_version.stdout }}" != "Python {{ version }}" and "{{ installed_version.stderr }}" != "Python {{ version }}" )
+
+- name: Check if pip {{ version|truncate(length=3, killwords=True, end='') }} is already installed
+  command: which pip{{ version|truncate(length=3, killwords=True, end='') }}
+  register: pipbin
+  ignore_errors: True
+
+- name: Get Python {{ version }} path
+  command: which python{{ version|truncate(length=3, killwords=True, end='') }}
+  register: pythonbin
+  when: pipbin|failed
+
+- name: Install pip {{ version|truncate(length=3, killwords=True, end='') }}
+  include: pip_install.yml python={{ pythonbin.stdout }}
+  when: pipbin|failed

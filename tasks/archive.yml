@@ -1,0 +1,30 @@
+---
+# Archive the required files
+
+- name: Check if the archive is already built
+  stat: path=/vagrant/build/{{ name }}.tar.gz
+  register: archive
+
+- name: Generate temp directory for {{ name }}
+  command: mktemp
+  register: tmp_folder
+  when: not archive.stat.exists
+
+- name: Remove existing temp directory for {{ name }}
+  command: rm -rf {{ tmp_folder.stdout }}
+  when: not archive.stat.exists
+
+- name: Create temp directory for {{ name }}
+  command: mkdir -p {{ tmp_folder.stdout }}
+  when: not archive.stat.exists
+
+- name: Copy the required files into temp directory
+  shell: mkdir -p `dirname {{ tmp_folder.stdout }}/{{ item.dst }}` && cp -a {{ item.src }} {{ tmp_folder.stdout }}/{{ item.dst }}
+  with_items: items
+  when: not archive.stat.exists
+
+- name: Archive the files
+  shell: tar cvzf /vagrant/build/{{ name }}.tar.gz *
+  args:
+      chdir: "{{ tmp_folder.stdout }}"
+  when: not archive.stat.exists

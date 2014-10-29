@@ -1,0 +1,48 @@
+---
+# Install Python from source
+
+- name: Install Python {{ version }} build dependencies
+  sudo: yes
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - build-essential
+    - libssl-dev
+
+- name: Generate temp directory for Python {{ version }}
+  command: mktemp
+  register: tmp_folder
+
+- name: Remove existing temp directory for Python {{ version }}
+  command: rm -rf {{ tmp_folder.stdout }}
+
+- name: Create temp directory for Python {{ version }}
+  command: mkdir -p {{ tmp_folder.stdout }}
+
+- name: Download Python {{ version }} sources
+  get_url: url=https://www.python.org/ftp/python/{{ version }}/Python-{{ version }}.tgz
+           dest={{ tmp_folder.stdout }}
+
+- name: Extract Python {{ version }} sources
+  command: tar zxf Python-{{ version }}.tgz
+  args:
+    chdir: "{{ tmp_folder.stdout }}"
+
+- name: Configure Python {{ version }}
+  command: ./configure
+  args:
+    chdir: "{{ tmp_folder.stdout }}/Python-{{ version }}"
+
+- name: Build Python {{ version }}
+  command: make
+  args:
+    chdir: "{{ tmp_folder.stdout }}/Python-{{ version }}"
+
+- name: Install Python {{ version }}
+  sudo: yes
+  command: make install
+  args:
+    chdir: "{{ tmp_folder.stdout }}/Python-{{ version }}"
+
+- name: Clean up temp directory
+  sudo: yes
+  command: rm -rf {{ tmp_folder.stdout }}

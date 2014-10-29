@@ -1,0 +1,179 @@
+---
+- hosts: all
+  tasks:
+    - name: Ensure Python 2.7.8 is installed
+      include: tasks/python.yml version=2.7.8
+
+    - name: Ensure Python 3.4.2 is installed
+      include: tasks/python.yml version=3.4.2
+
+    - name: Install scipy dependencies
+      sudo: yes
+      apt: pkg={{ item }} state=latest
+      with_items:
+        - build-essential
+        - gfortran
+        - libatlas-base-dev
+        - libblas-dev
+        - liblapack-dev
+
+    - name: Archive gfortran
+      include: tasks/archive.yml
+      vars:
+          name: gfortran
+          items:
+            - src: /usr/lib/libgfortran.so.3
+              dst: lib/libgfortran.so.3
+            - src: /usr/lib/libgfortran.so.3.0.0
+              dst: lib/libgfortran.so.3.0.0
+
+    - name: Archive atlas
+      include: tasks/archive.yml
+      vars:
+          name: atlas
+          items:
+            - src: /usr/lib/libatlas.a
+              dst: lib/libatlas.a
+            - src: /usr/lib/libatlas.so
+              dst: lib/libatlas.so
+            - src: /usr/lib/libatlas.so.3gf
+              dst: lib/libatlas.so.3gf
+            - src: /usr/lib/libatlas.so.3gf.0
+              dst: lib/libatlas.so.3gf.0
+            - src: /usr/lib/libcblas.a
+              dst: lib/libcblas.a
+            - src: /usr/lib/libcblas.so
+              dst: lib/libcblas.so
+            - src: /usr/lib/libcblas.so.3gf
+              dst: lib/libcblas.so.3gf
+            - src: /usr/lib/libcblas.so.3gf.0
+              dst: lib/libcblas.so.3gf.0
+            - src: /usr/lib/libf77blas.a
+              dst: lib/libf77blas.a
+            - src: /usr/lib/libf77blas.so
+              dst: lib/libf77blas.so
+            - src: /usr/lib/libf77blas.so.3gf
+              dst: lib/libf77blas.so.3gf
+            - src: /usr/lib/libf77blas.so.3gf.0
+              dst: lib/libf77blas.so.3gf.0
+            - src: /usr/lib/liblapack_atlas.a
+              dst: lib/liblapack_atlas.a
+            - src: /usr/lib/liblapack_atlas.so
+              dst: lib/liblapack_atlas.so
+            - src: /usr/lib/liblapack_atlas.so.3gf
+              dst: lib/liblapack_atlas.so.3gf
+            - src: /usr/lib/liblapack_atlas.so.3gf.0
+              dst: lib/liblapack_atlas.so.3gf.0
+            - src: /usr/lib/atlas/libblas.a
+              dst: lib/atlas/libblas.a
+            - src: /usr/lib/atlas/libblas.so
+              dst: lib/atlas/libblas.so
+            - src: /usr/lib/atlas/libblas.so.3gf
+              dst: lib/atlas/libblas.so.3gf
+            - src: /usr/lib/atlas/libblas.so.3gf.0
+              dst: lib/atlas/libblas.so.3gf.0
+            - src: /usr/lib/atlas/liblapack.a
+              dst: lib/atlas/liblapack.a
+            - src: /usr/lib/atlas/liblapack.so
+              dst: lib/atlas/liblapack.so
+            - src: /usr/lib/atlas/liblapack.so.3gf
+              dst: lib/atlas/liblapack.so.3gf
+            - src: /usr/lib/atlas/liblapack.so.3gf.0
+              dst: lib/atlas/liblapack.so.3gf.0
+
+    - name: Archive blas
+      include: tasks/archive.yml
+      vars:
+          name: blas
+          items:
+            - src: /usr/lib/libblas.a
+              dst: lib/libblas.a
+            - src: /usr/lib/libblas.so
+              dst: lib/libblas.so
+            - src: /usr/lib/libblas.so.3gf
+              dst: lib/libblas.so.3gf
+            - src: /usr/lib/libblas.so.3gf.0
+              dst: lib/libblas.so.3gf.0
+
+    - name: Archive lapack
+      include: tasks/archive.yml
+      vars:
+          name: lapack
+          items:
+            - src: /usr/lib/liblapack.a
+              dst: lib/liblapack.a
+            - src: /usr/lib/liblapack.so
+              dst: lib/liblapack.so
+            - src: /usr/lib/liblapack.so.3gf
+              dst: lib/liblapack.so.3gf
+            - src: /usr/lib/liblapack.so.3gf.0
+              dst: lib/liblapack.so.3gf.0
+
+    - name: Get pip2.7 path
+      command: which pip2.7
+      register: pip27
+
+    - name: Get pip3.4 path
+      command: which pip3.4
+      register: pip34
+
+    - name: Install Wheel
+      sudo: yes
+      pip: executable={{ item }} name=wheel version=0.24.0
+      with_items:
+        - "{{ pip27.stdout }}"
+        - "{{ pip34.stdout }}"
+
+    - name: Build numpy for Python 2.7.8
+      include: tasks/wheel.yml
+      vars:
+          pip: pip2.7
+          py_tag: cp27
+          abi_tag: none
+          package: numpy
+          version: 1.9.0
+
+    - name: Build scipy for Python 2.7.8
+      include: tasks/wheel.yml
+      vars:
+          pip: pip2.7
+          py_tag: cp27
+          abi_tag: none
+          package: scipy
+          version: 0.14.0
+
+    - name: Build scikit-learn for Python 2.7.8
+      include: tasks/wheel.yml
+      vars:
+          pip: pip2.7
+          py_tag: cp27
+          abi_tag: none
+          package: scikit-learn
+          version: 0.15.2
+
+    - name: build numpy for python 3.4.2
+      include: tasks/wheel.yml
+      vars:
+          pip: pip3.4
+          py_tag: cp34
+          abi_tag: cp34m
+          package: numpy
+          version: 1.9.0
+
+    - name: Build scipy for Python 3.4.2
+      include: tasks/wheel.yml
+      vars:
+          pip: pip3.4
+          py_tag: cp34
+          abi_tag: cp34m
+          package: scipy
+          version: 0.14.0
+
+    - name: Build scikit-learn for Python 3.4.2
+      include: tasks/wheel.yml
+      vars:
+          pip: pip3.4
+          py_tag: cp34
+          abi_tag: cp34m
+          package: scikit-learn
+          version: 0.15.2

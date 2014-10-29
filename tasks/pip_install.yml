@@ -1,0 +1,23 @@
+- name: Generate temp directory for pip
+  command: mktemp
+  register: tmp_folder
+
+- name: Remove existing temp directory
+  command: rm -rf {{ tmp_folder.stdout }}
+
+- name: Create temp directory
+  command: mkdir -p {{ tmp_folder.stdout }}
+
+
+- name: Download get-pip.py
+  get_url: url=https://bootstrap.pypa.io/get-pip.py
+           dest={{ tmp_folder.stdout }}
+
+- name: Install pip for Python {{ version }}
+  sudo: yes
+  command: "{{ python }} get-pip.py"
+  args:
+    chdir: "{{ tmp_folder.stdout }}"
+
+- name: Clean up temp directory
+  command: rm -rf {{ tmp_folder.stdout }}
