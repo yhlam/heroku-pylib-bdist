@@ -19,6 +19,13 @@ List of Binary Dependency
 * libblas-dev
 * liblapack-dev
 
+Usage
+-----
+
+* Extract the binary dependencies into /app/.heroku/python/.
+* Install the python libraries with ``pip install --no-index --find-links=path_to_heroku_pylib_bdist``.
+* Example install script for heroku compile hook is in example/install_pylib_bdist.
+
 Development
 -----------
 
@@ -36,4 +43,4 @@ The binaries will be compiled into the build directory.
 License
 -------
 
-The ansible playbook for this project is released under the MIT license. 
+The ansible playbook for this project is released under the MIT license.

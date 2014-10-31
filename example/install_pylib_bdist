@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+REPO="https://github.com/yhlam/heroku-pylib-bdist.git"
+
+if [ -f "${BUILD_DIR}/.heroku/vendor/bdist" ]; then
+  echo "Using cached binaries."
+else
+  echo "Downloading pre-compiled libraries"
+  # Download and extract everything into target vendor directory.
+  
+  # make a temp directory
+  tempdir="$( mktemp -t bdist_XXXX )"
+  rm -rf $tempdir
+  mkdir -p $tempdir
+
+  pushd $tempdir
+
+  git clone --quiet $REPO
+
+  tar -zxvf heroku-pylib-bdist/atlas.tar.gz -C $BUILD_DIR/.heroku/python/ > /dev/null
+  tar -zxvf heroku-pylib-bdist/blas.tar.gz -C $BUILD_DIR/.heroku/python/ > /dev/null
+  tar -zxvf heroku-pylib-bdist/gfortran.tar.gz -C $BUILD_DIR/.heroku/python/ > /dev/null
+  tar -zxvf heroku-pylib-bdist/lapack.tar.gz -C $BUILD_DIR/.heroku/python/ > /dev/null
+      
+  pip install wheel
+
+  pip install --no-index --find-links=$tempdir/heroku-pylib-bdist numpy scipy scikit-learn
+  
+  popd
+  rm -rf $tempdir
+
+  touch $BUILD_DIR/.heroku/vendor/bdist
+
+  echo "Installed pre-compiled libraries"
+fi
+
