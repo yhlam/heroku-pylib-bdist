@@ -5,6 +5,11 @@
   stat: path=/vagrant/build/{{ package|replace("-", "_") }}-{{ version }}-{{ py_tag }}-{{ abi_tag }}-linux_x86_64.whl
   register: wheel
 
+- name: Install {{ package }}
+  sudo: yes
+  command: "{{ pip }} install {{ package }}=={{ version }}"
+  when: not wheel.stat.exists
+
 - name: Build wheel package for {{ package }}
   command: "{{ pip }} wheel {{ package }}=={{ version }} --wheel-dir /vagrant/build"
   when: not wheel.stat.exists
