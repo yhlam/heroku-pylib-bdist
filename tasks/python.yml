@@ -13,7 +13,7 @@
 
 - name: Install Python {{ version }}
   include: python_install.yml version={{ version }}
-  when: pythonbin|failed or ( "{{ installed_version.stdout }}" != "Python {{ version }}" and "{{ installed_version.stderr }}" != "Python {{ version }}" )
+  when: pythonbin|failed or ( "{{ installed_version.stdout|default('unknown') }}" != "Python {{ version }}" and "{{ installed_version.stderr|default('unknown') }}" != "Python {{ version }}" )
 
 - name: Check if pip {{ version|truncate(length=3, killwords=True, end='') }} is already installed
   command: which pip{{ version|truncate(length=3, killwords=True, end='') }}
