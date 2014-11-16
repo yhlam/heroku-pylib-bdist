@@ -4,6 +4,9 @@
     - name: Ensure Python 2.7.8 is installed
       include: tasks/python.yml version=2.7.8
 
+    - name: Ensure Python 3.3.6 is installed
+      include: tasks/python.yml version=3.3.6
+
     - name: Ensure Python 3.4.2 is installed
       include: tasks/python.yml version=3.4.2
 
@@ -113,6 +116,10 @@
       command: which pip2.7
       register: pip27
 
+    - name: Get pip3.3 path
+      command: which pip3.3
+      register: pip33
+
     - name: Get pip3.4 path
       command: which pip3.4
       register: pip34
@@ -122,6 +129,7 @@
       pip: executable={{ item }} name=wheel version=0.24.0
       with_items:
         - "{{ pip27.stdout }}"
+        - "{{ pip33.stdout }}"
         - "{{ pip34.stdout }}"
 
     - name: Build numpy for Python 2.7.8
@@ -148,6 +156,33 @@
           pip: pip2.7
           py_tag: cp27
           abi_tag: none
+          package: scikit-learn
+          version: 0.15.2
+
+    - name: build numpy for python 3.3.6
+      include: tasks/wheel.yml
+      vars:
+          pip: pip3.3
+          py_tag: cp33
+          abi_tag: cp33m
+          package: numpy
+          version: 1.9.0
+
+    - name: Build scipy for Python 3.3.6
+      include: tasks/wheel.yml
+      vars:
+          pip: pip3.3
+          py_tag: cp33
+          abi_tag: cp33m
+          package: scipy
+          version: 0.14.0
+
+    - name: Build scikit-learn for Python 3.3.6
+      include: tasks/wheel.yml
+      vars:
+          pip: pip3.3
+          py_tag: cp33
+          abi_tag: cp33m
           package: scikit-learn
           version: 0.15.2
 
